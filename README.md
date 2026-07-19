@@ -107,14 +107,7 @@ Digital Twin Simulator
     Festival/event scenario modeling
     Policy intervention impact estimation
 
-👨‍💻 Team — INNOVATOR
-Avatar 	Name 	Role 	Contact
-RK 	Ranjeet Kumar ⭐ Team Leader 	AI/ML Development · System Architecture · Full Stack 	rajranjeet7680@gmail.com
-SH 	Shashank H E 	Data Analytics · Dashboard Dev · Visualization 	heshashank789@gmail.com
-BK 	Bharath Kumar 	Backend Development · API Integration · Database 	nagamallibharath@gmail.com
-BS 	Bawadharani Sree R 	Research · Documentation · Data Processing · Testing 	bawadharanisree@gmail.com
-VB 	Vivek Boini 	Frontend Development · UI/UX Design · User Experience 	vivekboini15@gmail.com
-📂 Project Structure
+
 
 Datathon 2026/
 │
