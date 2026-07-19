@@ -49,8 +49,6 @@ Prerequisites
 
 Run Locally
 
-# Clone the repository
-git clone https://github.com/Ranjeet7680/Al-Driven-Crime-Analytics-Visualization-Platform.git
 
 # Navigate into project folder
 cd "Al-Driven-Crime-Analytics-Visualization-Platform"
