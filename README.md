@@ -1,8 +1,7 @@
 # -Al-Driven-Crime-Analytics-Visualization-Platform
-CrimeScope AI 2.0 is a full-stack, browser-based intelligence dashboard built for Datathon 2026. It transforms raw Police crime data into actionable insights using AI prediction, geospatial heatmaps, real-time alerts, and natural language querying — all with zero backend infrastructure.
+it is a full-stack, browser-based intelligence dashboard . It transforms raw Police crime data into actionable insights using AI prediction, geospatial heatmaps, real-time alerts, and natural language querying — all with zero backend infrastructure.
 🗂️ Data Sources
-
-Karnataka Police Annual Statistics Report 2025
+ Police Annual Statistics Report 2025
 ├── Total Crimes     : 202,533 records
 ├── IPC/BNS Crimes   : 138,666 cases
 ├── SLL Crimes       : 63,867 cases
@@ -20,7 +19,7 @@ Key Crime Statistics:
     🎯 Crime Resolution Rate — 72% (▲3% improved)
 🏗️ Architecture
 
-CrimeScope AI 2.0 (Static SPA)
+CrimeScope (Static SPA)
 │
 ├── index.html          ← Single-page app shell + landing page
 ├── style.css           ← 1,500+ lines of premium CSS (dark + light modes)
@@ -69,7 +68,7 @@ First Launch
 
 📱 Responsive Design
 
-CrimeScope AI 2.0 is fully responsive across all devices:
+CrimeScope is fully responsive across all devices:
 Device 	Experience
 🖥️ Desktop (>1024px) 	Full sidebar, all charts, wide layouts
 💻 Laptop (900–1024px) 	Compact sidebar, 3-col KPIs
@@ -109,14 +108,14 @@ Digital Twin Simulator
 
 
 
-Datathon 2026/
+
 │
 ├── 📄 index.html              ← Full SPA: Landing + 12 dashboard pages
 ├── 🎨 style.css               ← Premium design system (dark/light + responsive)
 ├── ⚙️  app.js                  ← Core application logic & AI simulation
 ├── 📊 data.js                 ← Karnataka crime dataset (structured JS)
 │
-├── 🖼️  karnataka_map.png        ← District heatmap background
+├── 🖼️  _map.png        ← District heatmap background
 ├── 🖼️  logo.png                 ← App logo
 ├── 🖼️  innovator_logo.png       ← Team branding
 │
@@ -164,7 +163,7 @@ Our Approach:
 
 📜 License
 
-This project was created for Datathon 2026 educational and competition purposes.
+This project was created for educational and competition purposes.
 
-Data: Karnataka Police Annual Statistics 2025 — Government of Karnataka
+Data: Police Annual Statistics 2025 — Government of Karnataka
 Built with: ❤️ by INNOVATOR Team for public safety innovation
