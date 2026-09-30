@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aegis AI - Crime Intelligence & Visualization Platform</title>
+  
+  <!-- CDNs for mapping, icons, network analysis, and charts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Leaflet, Chart.js, Vis-Network libraries -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="glass-panel">
+    <div class="logo-container">
+      <div class="logo-icon">A</div>
+      <div class="logo-text">
+        <h1>AEGIS INTEL</h1>
+        <p>AI Crime Analytics & Visualization</p>
+      </div>
+    </div>
+    
+    <div class="header-controls">
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span id="status-text">SYSTEM CORE: ONLINE</span>
+      </div>
+      <div class="clock" id="system-clock">2026-06-20 17:00:00 UTC</div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" data-tab="tab-overview">
+      <i class="fa-solid fa-chart-line"></i> Dashboard Overview
+    </button>
+    <button class="tab-btn" data-tab="tab-predictive">
+      <i class="fa-solid fa-brain"></i> AI Predictive Risk & Alerts
+    </button>
+    <button class="tab-btn" data-tab="tab-network">
+      <i class="fa-solid fa-circle-nodes"></i> Criminal Network Link
+    </button>
+    <button class="tab-btn" data-tab="tab-correlation">
+      <i class="fa-solid fa-circle-dot"></i> Socio-Economic Correlation
+    </button>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main>
+    
+    <!-- 1. Overview Dashboard Tab -->
+    <div id="tab-overview" class="tab-content active">
+      <!-- Summary Row -->
+      <div class="metrics-row">
+        <div class="metric-card glass-panel">
+          <div class="metric-header">
+            <span>Total Recorded Crimes</span>
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+          <div class="metric-value" id="stat-total-crimes">0</div>
+          <div class="metric-trend down" id="stat-crime-trend">
+            <i class="fa-solid fa-arrow-trend-down"></i> <span>-4.2% vs last month</span>
+          </div>
+        </div>
+        
+        <div class="metric-card alert-card glass-panel">
+          <div class="metric-header">
+            <span>AI Anomaly Flags</span>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="metric-value" id="stat-ai-alerts">0</div>
+          <div class="metric-trend up" id="stat-alert-trend">
+            <i class="fa-solid fa-arrow-trend-up"></i> <span>+2 active threats</span>
+          </div>
+        </div>
+        
+        <div class="metric-card recidivism-card glass-panel">
+          <div class="metric-header">
+            <span>Recidivism Threat Index</span>
+            <i class="fa-solid fa-person-circle-exclamation"></i>
+          </div>
+          <div class="metric-value" id="stat-recidivism-index">0%</div>
+          <div class="metric-trend neutral">
+            <i class="fa-solid fa-equals"></i> <span>Stable avg risk</span>
+          </div>
+        </div>
+        
+        <div class="metric-card solved-card glass-panel">
+          <div class="metric-header">
+            <span>Incident Clearance Rate</span>
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div class="metric-value" id="stat-clearance-rate">0%</div>
+          <div class="metric-trend up">
+            <i class="fa-solid fa-circle-chevron-up"></i> <span>+1.5% improvement</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Overview Grid (Sidebar filters + GIS Map) -->
+      <div class="dashboard-grid">
+        <!-- Sidebar filters -->
+        <aside class="sidebar-panel glass-panel">
+          <h2 class="section-title">Operations Filter</h2>
+          
+          <div class="form-group">
+            <label for="filter-district">Select District</label>
+            <select id="filter-district">
+              <option value="all">-- All Districts --</option>
+              <option value="Bengaluru Central">Bengaluru Central Division</option>
+              <option value="Bengaluru South">Bengaluru South (Tech Corridor)</option>
+              <option value="Mysuru Division">Mysuru Heritage Division</option>
+              <option value="Mangaluru Coast">Mangaluru Coastal Division</option>
+              <option value="Hubballi Hub">Hubballi-Dharwad Transit Division</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="filter-crime-type">Crime Category</label>
+            <select id="filter-crime-type">
+              <option value="all">-- All Categories --</option>
+              <option value="Theft">Larceny / Theft</option>
+              <option value="Assault">Physical Assault</option>
+              <option value="Robbery">Armed Robbery</option>
+              <option value="Cybercrime">Cyber & Extortion</option>
+              <option value="Vandalism">Vandalism</option>
+              <option value="Burglary">Commercial/Res Burglary</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="filter-severity">Severity Threshold</label>
+            <select id="filter-severity">
+              <option value="all">-- All Levels --</option>
+              <option value="Low">Low Severity</option>
+              <option value="Medium">Medium Severity</option>
+              <option value="High">High Severity</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="filter-status">Case Status</label>
+            <select id="filter-status">
+              <option value="all">-- All Statuses --</option>
+              <option value="Active">Active Case</option>
+              <option value="Investigating">Under Investigation</option>
+              <option value="Solved">Solved / Closed</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" id="btn-open-report">
+            <i class="fa-solid fa-plus"></i> Report New Incident
+          </button>
+          
+          <button class="btn" id="btn-reset-filters">
+            <i class="fa-solid fa-arrows-rotate"></i> Reset System Filters
+          </button>
+        </aside>
+
+        <!-- GIS Viewport -->
+        <section class="map-container-wrapper glass-panel">
+          <div class="map-header-bar">
+            <div class="map-title">
+              <i class="fa-solid fa-earth-americas text-cyan"></i>
+              <span id="map-label-district">Spatio-Temporal Mapping Platform - All Sectors</span>
+            </div>
+            
+            <div class="map-layer-selector">
+              <button class="layer-btn active" id="map-layer-markers">
+                <i class="fa-solid fa-location-dot"></i> Case Markers
+              </button>
+              <button class="layer-btn" id="map-layer-heatmap">
+                <i class="fa-solid fa-fire"></i> Hotspot Density
+              </button>
+            </div>
+          </div>
+          
+          <div id="map-view"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 2. AI Predictive Risk & Alerts Tab -->
+    <div id="tab-predictive" class="tab-content">
+      <div class="ai-panel-grid">
+        <!-- Controls & Gauge Panel -->
+        <aside class="ai-controls-wrapper glass-panel">
+          <h2 class="section-title">ML Risk Predictor</h2>
+          
+          <div class="form-group">
+            <label for="ai-district-select">Predictive Target Sector</label>
+            <select id="ai-district-select">
+              <option value="Bengaluru Central">Bengaluru Central Division</option>
+              <option value="Bengaluru South" selected>Bengaluru South (Tech Corridor)</option>
+              <option value="Mysuru Division">Mysuru Heritage Division</option>
+              <option value="Mangaluru Coast">Mangaluru Coastal Division</option>
+              <option value="Hubballi Hub">Hubballi-Dharwad Transit Division</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="ai-time-select">Temporal Frame</label>
+            <select id="ai-time-select">
+              <option value="Day">Daytime Operations (0600 - 1800)</option>
+              <option value="Evening">Evening Operations (1800 - 2200)</option>
+              <option value="Night" selected>Late-Night Peak (2200 - 0600)</option>
+            </select>
+          </div>
+
+          <!-- Slider Overrides -->
+          <div class="slider-container">
+            <div class="slider-header">
+              <span>Socio-Economic Poverty Rate</span>
+              <span class="slider-val" id="val-poverty">14.5%</span>
+            </div>
+            <input type="range" id="slider-poverty" min="2" max="50" step="0.5" value="14.5">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-header">
+              <span>Unemployment Index</span>
+              <span class="slider-val" id="val-unemployment">5.9%</span>
+            </div>
+            <input type="range" id="slider-unemployment" min="1" max="25" step="0.5" value="5.9">
+          </div>
+
+          <div class="slider-container">
+            <div class="slider-header">
+              <span>Education Index (Favorable)</span>
+              <span class="slider-val" id="val-education">78%</span>
+            </div>
+            <input type="range" id="slider-education" min="10" max="98" step="1" value="78">
+          </div>
+
+          <button class="btn" id="btn-reset-ai-sliders">
+            <i class="fa-solid fa-undo"></i> Restore District Norms
+          </button>
+          
+          <!-- Gauge -->
+          <div class="gauge-panel">
+            <div class="risk-gauge-container">
+              <svg class="risk-gauge-svg">
+                <circle class="gauge-track" cx="70" cy="70" r="60"></circle>
+                <circle class="gauge-fill" id="gauge-risk-fill" cx="70" cy="70" r="60"></circle>
+              </svg>
+              <div class="gauge-value">
+                <span id="txt-risk-percent">--%</span>
+                <span>RISK</span>
+              </div>
+            </div>
+            
+            <div class="stat-grid-small" style="width: 100%;">
+              <div class="stat-item-small">
+                <label>Violent Crime</label>
+                <span id="gauge-risk-violent" style="color: var(--accent-red)">--%</span>
+              </div>
+              <div class="stat-item-small">
+                <label>Property Theft</label>
+                <span id="gauge-risk-property" style="color: var(--accent-orange)">--%</span>
+              </div>
+              <div class="stat-item-small" style="grid-column: span 2; margin-top: 5px; text-align: center;">
+                <label>Cyber Threat Vector</label>
+                <span id="gauge-risk-cyber" style="color: var(--accent-blue)">--%</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Live Intelligence Alerts Log -->
+        <section class="alerts-log-panel glass-panel">
+          <div class="alerts-log-header">
+            <div class="map-title">
+              <i class="fa-solid fa-bell text-red"></i>
+              <span>AI Anomaly & Trend Detection Feed</span>
+            </div>
+            <div class="alert-counter-badge" id="lbl-active-alerts-count">0 ACTIVE FLAGS</div>
+          </div>
+          
+          <div class="alerts-list" id="ai-alerts-container">
+            <!-- Dynamically populated alert items -->
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 3. Criminal Network Link Tab -->
+    <div id="tab-network" class="tab-content">
+      <div class="split-layout">
+        <!-- Interactive Graph -->
+        <section class="glass-panel" style="position: relative; height: 100%;">
+          <div class="graph-legend glass-panel">
+            <div class="legend-item">
+              <div class="legend-color color-leader"></div>
+              <span>Syndicate Director / High Risk</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color color-member"></div>
+              <span>Accomplice / Medium-High Risk</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color color-associate"></div>
+              <span>Associate / Lower Risk</span>
+            </div>
+          </div>
+          <div id="network-canvas"></div>
+        </section>
+
+        <!-- Criminal Profile Details -->
+        <aside class="profile-panel glass-panel">
+          <h2 class="section-title">Syndicate Profile Dossier</h2>
+          
+          <div id="profile-placeholder" style="text-align: center; color: var(--text-muted); margin-top: 5rem;">
+            <i class="fa-solid fa-fingerprint" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+            <span>Select a suspect node in the link graph to retrieve profile telemetry.</span>
+          </div>
+          
+          <div class="profile-card" id="profile-details-card" style="display: none;">
+            <div class="profile-header-main">
+              <img id="dossier-mugshot" class="mugshot-img" src="" alt="Mugshot">
+              <div class="profile-identity">
+                <h3 id="dossier-name">--</h3>
+                <p id="dossier-alias">Alias: --</p>
+                <div class="badge" id="dossier-status-badge">Parole</div>
+              </div>
+            </div>
+
+            <div class="risk-score-wrapper">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                <label style="text-transform: uppercase; font-weight: 600; color: var(--text-secondary);">Recidivism Risk Score</label>
+                <span id="dossier-risk-text" style="font-weight: 700; color: var(--accent-cyan);">--%</span>
+              </div>
+              <div class="risk-bar-container">
+                <div id="dossier-risk-bar" class="risk-bar-fill" style="background-color: var(--accent-cyan);"></div>
+              </div>
+            </div>
+
+            <div class="stat-grid-small">
+              <div class="stat-item-small">
+                <label>Age</label>
+                <span id="dossier-age">--</span>
+              </div>
+              <div class="stat-item-small">
+                <label>Gang Affiliation</label>
+                <span id="dossier-gang" style="color: var(--accent-purple);">--</span>
+              </div>
+              <div class="stat-item-small">
+                <label>Total Bookings</label>
+                <span id="dossier-arrests">--</span>
+              </div>
+              <div class="stat-item-small">
+                <label>Primary Crime</label>
+                <span id="dossier-main-crime">--</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Criminal Biography</label>
+              <p id="dossier-bio" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;"></p>
+            </div>
+
+            <div class="form-group">
+              <label>Risk Parameter Indices</label>
+              <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-secondary);">
+                  <span>Behavioral Disruption</span>
+                  <span id="dossier-index-behavioral">--</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-secondary);">
+                  <span>Environmental Exposure</span>
+                  <span id="dossier-index-environmental">--</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-secondary);">
+                  <span>Criminal Recidivism Hist.</span>
+                  <span id="dossier-index-historical">--</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Crime Timeline Registry</label>
+              <div id="dossier-timeline-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 140px; overflow-y: auto; padding-right: 5px;">
+                <!-- Timeline elements -->
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- 4. Socio-Economic Correlation Tab -->
+    <div id="tab-correlation" class="tab-content">
+      <div class="correlation-layout">
+        <!-- Scatter Chart -->
+        <section class="chart-container-panel glass-panel">
+          <div class="map-header-bar" style="border-bottom: none; padding: 0 0 1rem 0;">
+            <div class="map-title">
+              <i class="fa-solid fa-chart-simple text-cyan"></i>
+              <span>Socio-Economic Correlation Analysis</span>
+            </div>
+            
+            <div class="map-layer-selector">
+              <button class="layer-btn active" id="btn-corr-poverty">Poverty vs Crime</button>
+              <button class="layer-btn" id="btn-corr-unemployment">Unemployment vs Crime</button>
+              <button class="layer-btn" id="btn-corr-education">Education Index vs Crime</button>
+            </div>
+          </div>
+          <div style="flex-grow: 1; min-height: 400px; position: relative;">
+            <canvas id="correlation-chart-canvas"></canvas>
+          </div>
+        </section>
+
+        <!-- District Index Table & Analysis -->
+        <aside class="correlation-stats-panel glass-panel">
+          <h2 class="section-title">District Indicators</h2>
+          
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>District</th>
+                  <th id="th-var-val">Poverty %</th>
+                  <th>Crimes</th>
+                </tr>
+              </thead>
+              <tbody id="correlation-table-body">
+                <!-- Table rows populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="glass-panel" style="padding: 1rem; border-color: rgba(0, 240, 255, 0.1); background: rgba(255,255,255,0.01);">
+            <h3 style="font-family: var(--font-display); font-size: 0.75rem; color: var(--accent-cyan); margin-bottom: 0.5rem;">
+              AI REGRESSION MODEL INSIGHTS
+            </h3>
+            <p id="correlation-analysis-text" style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+              Analyzing data inputs...
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Report Incident Modal -->
+  <div class="modal-overlay" id="modal-report-incident">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h2>Report New Crime Incident</h2>
+        <button class="close-modal-btn" id="btn-close-modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <form id="form-report-incident" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="form-group">
+          <label for="rep-crime-type">Crime Category</label>
+          <select id="rep-crime-type" required>
+            <option value="Burglary">Commercial/Res Burglary</option>
+            <option value="Theft">Larceny / Theft</option>
+            <option value="Assault">Physical Assault</option>
+            <option value="Robbery">Armed Robbery</option>
+            <option value="Cybercrime">Cyber & Extortion</option>
+            <option value="Vandalism">Vandalism</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="rep-district">District Sector</label>
+          <select id="rep-district" required>
+            <option value="Bengaluru Central">Bengaluru Central Division</option>
+            <option value="Bengaluru South">Bengaluru South (Tech Corridor)</option>
+            <option value="Mysuru Division">Mysuru Heritage Division</option>
+            <option value="Mangaluru Coast">Mangaluru Coastal Division</option>
+            <option value="Hubballi Hub">Hubballi-Dharwad Transit Division</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="rep-offender">Linked Suspect / Offender</label>
+          <select id="rep-offender" required>
+            <!-- Dynamically filled with criminals list plus an 'Unknown' option -->
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="rep-severity">Severity Level</label>
+            <select id="rep-severity" required>
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="rep-status">Initial Status</label>
+            <select id="rep-status" required>
+              <option value="Active" selected>Active Case</option>
+              <option value="Investigating">Investigating</option>
+              <option value="Solved">Solved / Closed</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="rep-lat">Latitude</label>
+            <input type="number" id="rep-lat" step="0.0001" min="11" max="18" value="12.9716" required class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="rep-lng">Longitude</label>
+            <input type="number" id="rep-lng" step="0.0001" min="74" max="79" value="77.5946" required class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="rep-desc">Case Summary</label>
+          <textarea id="rep-desc" rows="3" required class="form-control" placeholder="Specify method of entry, stolen items, cyber vectors or injuries..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="btn-cancel-report" style="width: auto;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="width: auto;">Submit Case File</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Load script files -->
+  <script src="data.js"></script>
+  <script src="ai-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
